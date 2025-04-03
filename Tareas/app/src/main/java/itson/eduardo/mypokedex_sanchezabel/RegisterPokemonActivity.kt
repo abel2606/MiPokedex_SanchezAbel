@@ -43,6 +43,8 @@ class RegisterPokemonActivity : AppCompatActivity() {
             insets
         }
 
+        initCloudinary()
+
 
         val name: EditText = findViewById(R.id.et_pokemonName)
         val number: EditText = findViewById(R.id.et_pokemonNumber)
@@ -54,43 +56,21 @@ class RegisterPokemonActivity : AppCompatActivity() {
             intent.type = "image/*"
             startActivityForResult(intent, REQUEST_IMAGE_GET)
         }
-        initCloudinary()
 
         save.setOnClickListener {
             saveMarFromForm()
         }
 
-
-        userRef.addChildEventListener(object : ChildEventListener {
-            override fun onCancelled(error: DatabaseError) {}
-            override fun onChildMoved(snapshot: DataSnapshot, previousChildName: String?) {}
-            override fun onChildChanged(snapshot: DataSnapshot, previousChildName: String?) {}
-            override fun onChildRemoved(snapshot: DataSnapshot) {}
-
-            override fun onChildAdded(dataSnapshop: DataSnapshot, p1: String?) {
-                val value = dataSnapshop.getValue()
-
-                if (value is String) {
-
-                } else if (value is Pokemon) {
-                    val pokemon = value
-                    if (pokemon != null) {
-                        writeMark(pokemon)
-                    }
-                }
-            }
-        })
-
-
     }
 
-    fun savePokemon(): String {
+    fun savePokemon(callback: (String) -> Unit) {
         var url: String = ""
         if (imageUri != null) {
         MediaManager.get().upload(imageUri).unsigned(UPLOAD_PRESET)
             .callback(object : UploadCallback {
                 override fun onStart(requesId: String) {
                     Log.d("Cloudinary Quickstart", "Upload start")
+
                 }
 
                 override fun onProgress(requestId: String, bytes: Long, totalBytes: Long) {
@@ -102,10 +82,12 @@ class RegisterPokemonActivity : AppCompatActivity() {
                     //Aquí se busca encontrar la url de la imagen una vez se ha subido a cloudinary
                     url = resultData["secure_url"] as String? ?: ""
                     Log.d("URL}", url)
+                    callback(url)
                 }
 
                 override fun onError(requistId: String, error: ErrorInfo) {
                     Log.d("Cloudinary Quickstart", "Upload failed")
+                    callback("")
                 }
 
                 override fun onReschedule(requestId: String, error: ErrorInfo?) {
@@ -113,8 +95,9 @@ class RegisterPokemonActivity : AppCompatActivity() {
                 }
 
             }).dispatch()
+        } else {
+            callback("") // Si no hay imagen, devolver cadena vacía
         }
-        return url
     }
 
 
@@ -128,15 +111,17 @@ class RegisterPokemonActivity : AppCompatActivity() {
     private fun saveMarFromForm() {
         val namep: EditText = findViewById(R.id.et_pokemonName)
         val pNumber: EditText = findViewById(R.id.et_pokemonNumber)
-        val thumbnail: String = savePokemon()
 
-        val pokemon = Pokemon(
-            namep.text.toString(),
-            pNumber.text.toString().toInt(),
-            thumbnail
-        )
 
-        userRef.push().setValue(pokemon)
+        savePokemon { thumbnail ->
+            val pokemon = Pokemon(
+                namep.text.toString(),
+                pNumber.text.toString().toInt(),
+                thumbnail
+            )
+
+            userRef.push().setValue(pokemon)
+        }
     }
 
     private fun writeMark(mark: Pokemon) {
@@ -151,7 +136,6 @@ class RegisterPokemonActivity : AppCompatActivity() {
         requestCode: Int,
         resultCode: Int,
         data: Intent?,
-        caller: ComponentCaller
     ) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -160,6 +144,9 @@ class RegisterPokemonActivity : AppCompatActivity() {
 
             if (fullImageUri != null)
                 changeImage(fullImageUri)
+            imageUri = fullImageUri
+
+
         }
     }
 
