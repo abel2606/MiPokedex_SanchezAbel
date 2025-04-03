@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "72650475559",
+    "project_id": "mypokedex-sanchezabel",
+    "storage_bucket": "mypokedex-sanchezabel.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:72650475559:android:52676417d40aebb6fa6602",
+        "android_client_info": {
+          "package_name": "itson.eduardo.mypokedex_sanchezabel"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCgj0nh-2g348eZXSo_eFRwpUh1UZzfrEc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

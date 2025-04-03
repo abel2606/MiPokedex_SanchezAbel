@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".RegisterPokemonActivity">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Pokemon"
+        android:textSize="25sp"
+        android:layout_gravity="center"
+        android:layout_marginTop="25dp"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:layout_marginHorizontal="25dp"
+        android:layout_marginTop="35dp"
+        android:id="@+id/et_pokemonName"/>
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="number"
+        android:layout_marginHorizontal="25dp"
+        android:layout_marginTop="25dp"
+        android:id="@+id/et_pokemonNumber"/>
+
+    <ImageView
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:id="@+id/iv_thumbnail"
+        android:layout_gravity="center"
+        android:layout_marginTop="25dp"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:text="Select image"
+        android:layout_gravity="center"
+        android:layout_marginTop="15dp"
+        android:id="@+id/btn_selectImage"
+        />
+    
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:text="Save Pokemon"
+        android:layout_gravity="center"
+        android:layout_marginTop="50dp"
+        android:id="@+id/btn_savePokemon"/>
+
+
+
+
+
+</LinearLayout>
