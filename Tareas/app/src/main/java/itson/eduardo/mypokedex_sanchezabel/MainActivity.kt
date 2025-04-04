@@ -4,19 +4,31 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.Button
 import android.widget.ImageView
+import android.widget.ListView
 import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.bumptech.glide.Glide
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var listView: ListView
+    private lateinit var adapter: JuegoAdapter
+    private val pokemones = ArrayList<Pokemon>()
+    private val userRef = FirebaseDatabase.getInstance().getReference("Pokemones")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -27,6 +39,13 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        listView = findViewById(R.id.lv_pokemonList)
+        adapter = JuegoAdapter(this, pokemones)
+        listView.adapter = adapter
+
+        // Cargar Pokémon desde Firebase
+        loadPokemonsFromFirebase()
+
         val btnresgisterPokemon: Button = findViewById(R.id.btn_addPokemon)
         btnresgisterPokemon.setOnClickListener {
             val intent: Intent = Intent(this, RegisterPokemonActivity::class.java)
@@ -35,56 +54,62 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun loadPokemonsFromFirebase() {
+        userRef.addValueEventListener(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                pokemones.clear()  // Limpiar la lista antes de agregar los nuevos Pokémon
+                for (data in snapshot.children) {
+                    val pokemon = data.getValue(Pokemon::class.java)
+                    if (pokemon != null) {
+                        pokemones.add(pokemon)
+                    }
+                }
+                adapter.notifyDataSetChanged()  // Notificar al adaptador que los datos han cambiado
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e("Firebase", "Error al obtener datos: ${error.message}")
+            }
+        })
+    }
+
+
 
 }
 
-class JuegoAdapter: BaseAdapter {
-    var context: Context? = null
+class JuegoAdapter : BaseAdapter {
+    var context: Context
     var pokemones = ArrayList<Pokemon>()
 
-    constructor(context: Context, juegos: ArrayList<Pokemon>) {
+    constructor(context: Context, pokemones: ArrayList<Pokemon>) {
         this.context = context
-        this.pokemones = juegos
+        this.pokemones = pokemones
     }
 
     override fun getView(position: Int, convertView: View?, parent: ViewGroup?): View {
-        var pokemon = pokemones[position]
-        var inflator = context!!.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        var vista = inflator.inflate(R.layout.pokemon_item, null)
+        val pokemon = pokemones[position]
+        val inflator = context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val vista = inflator.inflate(R.layout.pokemon_item, null)
 
-        var imagen = vista.findViewById(R.id.im_imagenPokemon) as ImageView
-        var nombre = vista.findViewById(R.id.tv_nombrePokemon) as TextView
-        var numero = vista.findViewById(R.id.tv_numeroPokemon) as TextView
+        val imagen = vista.findViewById<ImageView>(R.id.im_imagenPokemon)
+        val nombre = vista.findViewById<TextView>(R.id.tv_nombrePokemon)
+        val numero = vista.findViewById<TextView>(R.id.tv_numeroPokemon)
 
         if (pokemon.thumbnail.isNotEmpty()) {
-            imagen.setImageURI(Uri.parse(pokemon.thumbnail))
+            Glide.with(context).load(pokemon.thumbnail).into(imagen)
         } else {
             imagen.setImageResource(R.drawable.pikachu)
         }
 
-        nombre.setText(pokemon.name)
-        numero.setText(pokemon.number)
-
-        imagen.setOnClickListener {
-            var intent: Intent = Intent(context, MainActivity::class.java)
-            intent.putExtra("nombre", pokemon.name)
-            intent.putExtra("numero", pokemon.number)
-            intent.putExtra("imagen", pokemon.thumbnail)
-            context!!.startActivity(intent)
-        }
+        nombre.text = pokemon.name
+        numero.text = pokemon.number.toString()
 
         return vista
     }
 
-    override fun getCount(): Int {
-        return pokemones.size
-    }
+    override fun getCount(): Int = pokemones.size
 
-    override fun getItem(position: Int): Any {
-        return pokemones[position]
-    }
+    override fun getItem(position: Int): Any = pokemones[position]
 
-    override fun getItemId(position: Int): Long {
-        return position.toLong()
-    }
+    override fun getItemId(position: Int): Long = position.toLong()
 }

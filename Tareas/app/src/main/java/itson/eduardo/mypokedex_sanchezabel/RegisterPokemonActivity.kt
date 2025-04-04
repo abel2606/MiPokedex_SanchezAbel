@@ -120,7 +120,10 @@ class RegisterPokemonActivity : AppCompatActivity() {
                 thumbnail
             )
 
-            userRef.push().setValue(pokemon)
+            userRef.push().setValue(pokemon).addOnCompleteListener{
+                val intent = Intent(this, MainActivity::class.java)
+                startActivity(intent)
+            }
         }
     }
 
